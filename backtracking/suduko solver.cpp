@@ -1,28 +1,42 @@
-// Time: O(N!)
-// Space: O(N)
 class Solution {
-    vector<int> used;
-    bool dfs(vector<int> &ans, int i) {
-        if (i == ans.size()) return true; // filled all the numbers, found the answer
-        if (ans[i]) return dfs(ans, i + 1); // this index is already filled, continue to fill the next index.
-        for (int j = used.size() - 1; j > 0; --j) { // try each number in decending order from n -1 to 1.
-            if (used[j]) continue; // j is already used, skip
-            if (j != 1 && (i + j >= ans.size() || ans[i + j])) continue; // we can't fill `ans[i + j]` either because `i + j` is out of bound or `ans[i + j]` is already filled. Skip.
-            used[j] = 1; // mark number `j` as used.
-            ans[i] = j; // fill `ans[j]` and `ans[i + j]` (if needed) with `j`.
-            if (j != 1) ans[i + j] = j;
-            if (dfs(ans, i + 1)) return true;
-            ans[i] = 0; // this filling is invalid, backtrack and try the next number.
-            if (j != 1) ans[i + j] = 0;
-            used[j] = 0;
+public:
+    vector<pair<int, int>> emptyCells;
+    int rows[9] = {}, cols[9] = {}, boxes[9] = {};
+    void solveSudoku(vector<vector<char>>& board) {
+        for (int r = 0; r < 9; r++) {
+            for (int c = 0; c < 9; c++) {
+                if (board[r][c] == '.') {
+                    emptyCells.emplace_back(r, c);
+                } else {
+                    int val = board[r][c] - '0';
+                    int boxPos = (r / 3) * 3 + (c / 3);
+                    rows[r] |= 1 << val;
+                    cols[c] |= 1 << val;
+                    boxes[boxPos] |= 1 << val;
+                }
+            }
+        }
+        backtracking(board, 0);
+    }
+    bool backtracking(vector<vector<char>>& board, int i) {
+        if (i == emptyCells.size()) return true; // Check if we filled all empty cells?
+
+        int r = emptyCells[i].first, c = emptyCells[i].second, boxPos = (r / 3) * 3 + c / 3;
+        for (int val = 1; val <= 9; ++val) {
+            if (getBit(rows[r], val) || getBit(cols[c], val) || getBit(boxes[boxPos], val)) continue; // skip if that value is existed!
+            board[r][c] = ('0' + val);
+            int oldRow = rows[r], oldCol = cols[c], oldBox = boxes[boxPos]; // backup old values
+            rows[r] |= 1 << val;
+            cols[c] |= 1 << val;
+            boxes[boxPos] |= 1 << val;
+            if (backtracking(board, i + 1)) return true;
+            rows[r] = oldRow; // backtrack
+            cols[c] = oldCol; // backtrack
+            boxes[boxPos] = oldBox; // backtrack
         }
         return false;
     }
-public:
-    vector<int> constructDistancedSequence(int n) {
-        vector<int> ans(2 * n - 1);
-        used.assign(n + 1, 0); // numbers 1 ~ n are unused initially
-        dfs(ans, 0); // try filling numbers from index 0.
-        return ans;
+    int getBit(int x, int k) {
+        return (x >> k) & 1;
     }
 };
