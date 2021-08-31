@@ -1,0 +1,6 @@
+SegTree array has an unused 0 index because 0*2=0 so the left child of root will point to root itself which isn't true.
+Height-logn which helps in logn query and uppdate operations.
+
+Other appli- 
+Range gcd,lcm in the same way as range min max
+Finding smallest index i such that the sum of first i elements is greater than or equal to x -O(log^2n) using binary search and segment tree or in O(logn) time using the kth zero technique
